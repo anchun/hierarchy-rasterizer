@@ -18,7 +18,7 @@
 #define BLOCK_SIZE (BLOCK_X * BLOCK_Y)
 #define NUM_WARPS (BLOCK_SIZE/32)
 
-#define DGR_FIX_AA
+//#define DGR_FIX_AA
 
 #define CHECK_CUDA(A, debug) \
 A; if(debug) { \
