@@ -77,7 +77,8 @@ class _RasterizeGaussians(torch.autograd.Function):
             raster_settings.campos,
             raster_settings.prefiltered,
             raster_settings.debug,
-            raster_settings.do_depth
+            raster_settings.do_depth,
+            raster_settings.big_limit
         )
 
         # Invoke C++/CUDA rasterizer
