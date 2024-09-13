@@ -161,6 +161,7 @@ class GaussianRasterizationSettings(NamedTuple):
     interpolation_weights : torch.Tensor
     num_node_kids : torch.Tensor
     do_depth : bool
+    big_limit : float
 
 
 class GaussianRasterizer(nn.Module):
