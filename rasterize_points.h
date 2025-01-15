@@ -24,6 +24,7 @@ RasterizeGaussiansCUDA(
 	const torch::Tensor& kids,
 	const torch::Tensor& means3D,
     const torch::Tensor& colors,
+    const torch::Tensor& semantics,
     const torch::Tensor& opacity,
 	const torch::Tensor& scales,
 	const torch::Tensor& rotations,
@@ -64,6 +65,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Te
 	const float tan_fovy,
     const torch::Tensor& dL_dout_color,
 	const torch::Tensor& dL_dout_invdepth,
+	const torch::Tensor& dL_dout_semantic,
 	const torch::Tensor& sh,
 	const int degree,
 	const torch::Tensor& campos,
@@ -71,4 +73,5 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Te
 	const int R,
 	const torch::Tensor& binningBuffer,
 	const torch::Tensor& imageBuffer,
+	const torch::Tensor& semantics,
 	const bool debug);

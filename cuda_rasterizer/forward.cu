@@ -441,11 +441,12 @@ __global__ void __launch_bounds__(BLOCK_X * BLOCK_Y)
 renderCUDA(
 	const uint2* __restrict__ ranges,
 	const uint32_t* __restrict__ point_list,
-	int W, int H,
+	int W, int H, int S,
 	const float* ts,
 	const int* kids,
 	const float2* __restrict__ points_xy_image,
 	const float* __restrict__ features,
+	const float* __restrict__ semantics,
 	const float4* __restrict__ conic_opacity,
 	float* __restrict__ final_T,
 	uint32_t* __restrict__ n_contrib,
@@ -453,7 +454,8 @@ renderCUDA(
 	float* __restrict__ out_color,
 	int P, int skyboxnum,
 	const float* __restrict__ depths,
-	float* __restrict__ invdepth)
+	float* __restrict__ invdepth,
+	float* __restrict__ out_semantic)
 {
 	// Identify current tile and associated min/max pixel range.
 	auto block = cg::this_thread_block();
@@ -558,6 +560,10 @@ renderCUDA(
 			for (int ch = 0; ch < CHANNELS; ch++)
 				C[ch] += features[coll_id * CHANNELS + ch] * alpha * T;
 
+			for (int ch = 0; ch < S; ch++){
+				out_semantic[ch * H * W + pix_id] += semantics[coll_id[j] * S + ch] * alpha * T;
+			}
+
 			if(invdepth)
 			expected_invdepth += (1 / depths[collected_id[j]]) * alpha * T;
 
@@ -587,11 +593,12 @@ void FORWARD::render(
 	const dim3 grid, dim3 block,
 	const uint2* ranges,
 	const uint32_t* point_list,
-	int W, int H,
+	int W, int H, int S,
 	const float* ts,
 	const int* kids,
 	const float2* means2D,
 	const float* colors,
+	const float* semantics,
 	const float4* conic_opacity,
 	float* final_T,
 	uint32_t* n_contrib,
@@ -601,16 +608,18 @@ void FORWARD::render(
 	int skyboxnum,
 	cudaStream_t stream,
 	float* depths,
-	float* depth)
+	float* depth,
+	float* out_semantic)
 {
 	renderCUDA<NUM_CHANNELS> << <grid, block, 0, stream >> > (
 		ranges,
 		point_list,
-		W, H,
+		W, H, S,
 		ts,
 		kids,
 		means2D,
 		colors,
+		semantics,
 		conic_opacity,
 		final_T,
 		n_contrib,
@@ -619,7 +628,8 @@ void FORWARD::render(
 		P,
 		skyboxnum,
 		depths, 
-		depth);
+		depth,
+		out_semantic);
 }
 
 
