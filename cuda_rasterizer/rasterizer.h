@@ -34,7 +34,7 @@ namespace CudaRasterizer
 			std::function<char* (size_t)> geometryBuffer,
 			std::function<char* (size_t)> binningBuffer,
 			std::function<char* (size_t)> imageBuffer,
-			const int P, int D, int M,
+			const int P, int D, int M, int S,
 			const float* background,
 			const int width, int height,
 			const int* indices,
@@ -44,6 +44,7 @@ namespace CudaRasterizer
 			const float* means3D,
 			const float* shs,
 			const float* colors_precomp,
+        	const float* semantics,
 			const float* opacities,
 			const float* scales,
 			const float scale_modifier,
@@ -55,6 +56,7 @@ namespace CudaRasterizer
 			const float tan_fovx, float tan_fovy,
 			const bool prefiltered,
 			float* out_color,
+        	float* out_semantic,
 			float* depth,
 			int* radii = nullptr,
 			int* rects = nullptr,
@@ -68,7 +70,7 @@ namespace CudaRasterizer
 			bool on_cpu = false);
 
 		static void backward(
-			const int P, int D, int M, int R,
+			const int P, int D, int M, int R, int S,
 			const float* background,
 			const int width, int height,
 			const int* indices,
@@ -78,6 +80,7 @@ namespace CudaRasterizer
 			const float* means3D,
 			const float* shs,
 			const float* colors_precomp,
+        	const float* semantics,
 			const float* opacities,
 			const float* scales,
 			const float scale_modifier,
@@ -93,6 +96,7 @@ namespace CudaRasterizer
 			char* image_buffer,
 			const float* dL_dpix,
 			const float* dL_invdepths,
+        	const float* dL_dpix_semantic,
 			float* dL_dmean2D,
 			float* dL_dconic,
 			float* dL_dopacity,
@@ -103,6 +107,7 @@ namespace CudaRasterizer
 			float* dL_dsh,
 			float* dL_dscale,
 			float* dL_drot,
+        	float* dL_dsemantic,
 			bool debug);
 	};
 };
