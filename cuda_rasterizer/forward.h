@@ -63,11 +63,12 @@ namespace FORWARD
 		const dim3 grid, dim3 block,
 		const uint2* ranges,
 		const uint32_t* point_list,
-		int W, int H,
+		int W, int H, int S,
 		const float* ts,
 		const int* kids,
 		const float2* points_xy_image,
 		const float* features,
+		const float* semantics,
 		const float4* conic_opacity,
 		float* final_T,
 		uint32_t* n_contrib,
@@ -77,7 +78,8 @@ namespace FORWARD
 		int skyboxnum,
 		cudaStream_t stream,
 		float* depths,
-		float* depth);
+		float* depth,
+		float* out_semantic);
 }
 
 

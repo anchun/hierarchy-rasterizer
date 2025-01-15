@@ -495,7 +495,7 @@ __global__ void preprocessCUDA(
 }
 
 // Backward version of the rendering procedure.
-template <uint32_t C>
+template <uint32_t C, uint32_t S_MAX>
 __global__ void __launch_bounds__(BLOCK_X * BLOCK_Y)
 renderCUDA(
 	const uint2* __restrict__ ranges,
@@ -576,6 +576,7 @@ renderCUDA(
 	float last_alpha = 0;
 	float last_color[C] = { 0 };
 	float last_invdepth = 0;
+        float accum_semantic_rec[S_MAX] = { 0 };
 	float last_semantic[S_MAX]= { 0 };
 
 
@@ -854,7 +855,7 @@ void BACKWARD::render(
 	float* dL_dinvdepths,
 	float* dL_dsemantics)
 {
-	renderCUDA<NUM_CHANNELS> << <grid, block >> >(
+	renderCUDA<NUM_CHANNELS, NUM_CLASSES> << <grid, block >> >(
 		ranges,
 		point_list,
 		W, H, S,

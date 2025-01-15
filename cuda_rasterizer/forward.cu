@@ -561,7 +561,7 @@ renderCUDA(
 				C[ch] += features[coll_id * CHANNELS + ch] * alpha * T;
 
 			for (int ch = 0; ch < S; ch++){
-				out_semantic[ch * H * W + pix_id] += semantics[coll_id[j] * S + ch] * alpha * T;
+				out_semantic[ch * H * W + pix_id] += semantics[coll_id * S + ch] * alpha * T;
 			}
 
 			if(invdepth)
