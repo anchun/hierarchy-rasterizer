@@ -13,6 +13,7 @@
 #include "auxiliary.h"
 #include <cooperative_groups.h>
 #include <cooperative_groups/reduce.h>
+#include <iostream>
 namespace cg = cooperative_groups;
 
 __device__ __forceinline__ float sq(float x) { return x * x; }
@@ -567,8 +568,10 @@ renderCUDA(
 	{
 		for (int i = 0; i < C; i++)
 			dL_dpixel[i] = dL_dpixels[i * H * W + pix_id];
-		for (int i = 0; i < S; i++)
-			dL_dpixel_semantic[i] = dL_dpixel_semantics[i * H * W + pix_id];
+		if(dL_dpixel_semantics){
+			for (int i = 0; i < S; i++)
+				dL_dpixel_semantic[i] = dL_dpixel_semantics[i * H * W + pix_id];
+		}
 		if(dL_invdepths)
 		dL_invdepth = dL_invdepths[pix_id];
 	}
@@ -578,7 +581,6 @@ renderCUDA(
 	float last_invdepth = 0;
         float accum_semantic_rec[S_MAX] = { 0 };
 	float last_semantic[S_MAX]= { 0 };
-
 
 	// Gradient of pixel coordinate w.r.t. normalized 
 	// screen-space viewport corrdinates (-1 to 1)
@@ -603,8 +605,10 @@ renderCUDA(
 
 			if(dL_invdepths)
 			collected_depths[block.thread_rank()] = depths[coll_id];
-			for (int i = 0; i < S; i++)
-				collected_semantics[i * BLOCK_SIZE + block.thread_rank()] = semantics[coll_id * S + i];
+			if(semantics){
+				for (int i = 0; i < S; i++)
+					collected_semantics[i * BLOCK_SIZE + block.thread_rank()] = semantics[coll_id * S + i];
+			}
 		}
 		block.sync();
 
@@ -682,20 +686,22 @@ renderCUDA(
 
 			// Propagate gradients from pixel semantic to opacity
 			// Just replace color with semantic
-			const float dchannel_dsemantic = alpha * T;
-			for (int ch = 0; ch < S; ch++)
-			{
+			if(semantics){
+				const float dchannel_dsemantic = alpha * T;
+				for (int ch = 0; ch < S; ch++)
+				{
 				// currently do not backward semantic gradients to alpha ...
 				// comment the code below
 
-				const float s = collected_semantics[ch * BLOCK_SIZE + j];
-				accum_semantic_rec[ch] = last_alpha * last_semantic[ch] + (1.f - last_alpha) * accum_semantic_rec[ch];
-				last_semantic[ch] = s;
+					const float s = collected_semantics[ch * BLOCK_SIZE + j];
+					accum_semantic_rec[ch] = last_alpha * last_semantic[ch] + (1.f - last_alpha) * accum_semantic_rec[ch];
+					last_semantic[ch] = s;
 
-				const float dL_dchannel = dL_dpixel_semantic[ch];
-				dL_dalpha += (s - accum_semantic_rec[ch]) * dL_dchannel;
+					const float dL_dchannel = dL_dpixel_semantic[ch];
+					dL_dalpha += (s - accum_semantic_rec[ch]) * dL_dchannel;
 
-				atomicAdd(&(dL_dsemantics[global_id * S + ch]), dchannel_dsemantic * dL_dchannel);
+					atomicAdd(&(dL_dsemantics[global_id * S + ch]), dchannel_dsemantic * dL_dchannel);
+				}
 			}
 
 			// Propagate gradients from inverse depth to alphaas and
